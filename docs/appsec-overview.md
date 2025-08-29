@@ -1,37 +1,37 @@
-# Application Security and Architecture Documentation
+# アプリケーションセキュリティとアーキテクチャドキュメント
 
-High level overview of the components and how they talk to each other:
+コンポーネントとそれらがどのように相互に通信するかの高レベル概要：
 
 ```mermaid
 graph LR
-    Client[Game Client in Browser] -->|WSS|Server[Game Server in AWS Fargate] -->|HTTPS|Images[Item Images Service in AWS Fargate]
+    Client[ブラウザ内ゲームクライアント] -->|WSS|Server[AWS Fargateゲームサーバー] -->|HTTPS|Images[AWS Fargateアイテム画像サービス]
 ```
 
-## Game Client
+## ゲームクライアント
 
-The Game Client is a Vue.js 3 single page application that provides the user interface and game experience in the user's browser. It maintains real-time state synchronization with the server through a WebSocket connection to the game server.
+ゲームクライアントは、ユーザーのブラウザでユーザーインターフェースとゲーム体験を提供するVue.js 3シングルページアプリケーションです。ゲームサーバーへのWebSocket接続を通じて、サーバーとのリアルタイム状態同期を維持します。
 
 ```mermaid
 graph TB
-    subgraph Player Browser
-        UI[Running Game Client]
-        Store[Pinia Store]
-        Systems[Game Systems]
+    subgraph プレイヤーブラウザ
+        UI[実行中ゲームクライアント]
+        Store[Piniaストア]
+        Systems[ゲームシステム]
         UI --> Store
         Store <--> Systems
     end
 
-    subgraph Out
-        WS[Game Server]
-        ImageDist[Images CloudFront]
-        FrontendDist[Frontend CloudFront with Lambda@Edge basic auth]
+    subgraph 外部
+        WS[ゲームサーバー]
+        ImageDist[画像CloudFront]
+        FrontendDist[Lambda@Edge基本認証付きフロントエンドCloudFront]
     end
 
-    subgraph Build
-       Repo[Client Source Code]
-       viteBuild[vite build]
-       static[Static HTML, JS, and Image Assets]
-       S3[S3 Bucket]
+    subgraph ビルド
+       Repo[クライアントソースコード]
+       viteBuild[viteビルド]
+       static[静的HTML、JS、画像アセット]
+       S3[S3バケット]
        Repo --> viteBuild --> static --> S3
     end
 
@@ -40,48 +40,48 @@ graph TB
     UI -->|HTTPS|FrontendDist -->|Origin Access Control|S3
 ```
 
-### Technology Stack
-- **Framework**: Vue.js 3 with Composition API
-- **Build Tool**: Vite
-- **Language**: TypeScript
-- **State Management**: Pinia
-- **Routing**: Vue Router
-- **Hosting**: S3, accessed via CloudFront
+### 技術スタック
+- **フレームワーク**: Composition APIを使用したVue.js 3
+- **ビルドツール**: Vite
+- **言語**: TypeScript
+- **状態管理**: Pinia
+- **ルーティング**: Vue Router
+- **ホスティング**: CloudFront経由でアクセスされるS3
 
-The game client is built using Vite, and hosted as static HTML, JS, CSS, and image assets in an S3 bucket. Browsers fetch from the S3 bucket via CloudFront.
+ゲームクライアントはViteを使用してビルドされ、S3バケット内に静的HTML、JS、CSS、画像アセットとしてホストされます。ブラウザはCloudFront経由でS3バケットから取得します。
 
-### Inbound Connections
-- The player's browser loads the game client as static prebuilt assets delivered by CloudFront, using the S3 bucket as an origin. CloudFront uses an Origin Access Control policy to fetch from the S3 bucket. In preview, CloudFront also has a Lambda@Edge function that implements HTTP basic auth to restrict public access.
+### インバウンド接続
+- プレイヤーのブラウザは、S3バケットをオリジンとして使用し、CloudFrontによって配信される静的な事前ビルドアセットとしてゲームクライアントを読み込みます。CloudFrontはOrigin Access Controlポリシーを使用してS3バケットから取得します。プレビューでは、CloudFrontにはパブリックアクセスを制限するHTTP基本認証を実装するLambda@Edge関数もあります。
 
-### Outbound Connections
-- Browser running client connects via WSS to a WebSocket based game server via CloudFront in order to sync various forms of state:
-  - Authentication (signin/signup) via WebSocket handlers
-  - Item operations (pull, move, discard, appraise, buy)
-  - Inventory queries and synchronization
-  - Periodic ping/pong for connection health
-- Browser running client connects via HTTPS to a CloudFront distribution that hosts dynamically generated item images
-- Browser running client connects via HTTPS to it's own CloudFront distribution to load in additional static, prebuilt assets in the background as the user accesses new screens
+### アウトバウンド接続
+- クライアントを実行するブラウザは、様々な形式の状態を同期するために、CloudFront経由でWebSocketベースのゲームサーバーにWSSで接続します：
+  - WebSocketハンドラーを介した認証（サインイン/サインアップ）
+  - アイテム操作（取得、移動、破棄、鑑定、購入）
+  - インベントリクエリと同期
+  - 接続健全性のための定期的なping/pong
+- クライアントを実行するブラウザは、動的に生成されたアイテム画像をホストするCloudFrontディストリビューションにHTTPS経由で接続
+- クライアントを実行するブラウザは、ユーザーが新しい画面にアクセスする際にバックグラウンドで追加の静的な事前ビルドアセットを読み込むために、自身のCloudFrontディストリビューションにHTTPS経由で接続
 
-## Game Server
+## ゲームサーバー
 
-The Game Server is a Bun-based WebSocket server that manages game state, player authentication, and coordinates interactions between clients and external services. It uses DynamoDB for persistent storage and integrates with AWS Bedrock for AI-powered item generation. It calls a downstream image generation service that creates dynamic images for game items.
+ゲームサーバーは、ゲーム状態を管理し、プレイヤー認証を行い、クライアントと外部サービス間の相互作用を調整するBunベースのWebSocketサーバーです。永続ストレージにDynamoDBを使用し、AI駆動のアイテム生成のためにAWS Bedrockと統合します。ゲームアイテムの動的画像を作成する下流の画像生成サービスを呼び出します。
 
 ```mermaid
 graph TB
-    subgraph Server
-        WS[WebSocket Server in AWS Fargate]
-        Handlers[Message Handlers]
-        State[State Management]
+    subgraph サーバー
+        WS[AWS FargateのWebSocketサーバー]
+        Handlers[メッセージハンドラー]
+        State[状態管理]
     end
 
-    subgraph In
-        Client[Game Clients]
+    subgraph 入力
+        Client[ゲームクライアント]
     end
 
-    subgraph Out
+    subgraph 出力
         DB[DynamoDB]
         Bedrock[AWS Bedrock]
-        Images[Item Images Service]
+        Images[アイテム画像サービス]
         Cognito[Amazon Cognito]
     end
 
@@ -94,61 +94,61 @@ graph TB
     Handlers -->|IAM|Cognito
 ```
 
-### Technology Stack
-- **Runtime**: Bun
-- **Language**: TypeScript
-- **WebSocket**: Native Bun WebSocket server
-- **Database**: Amazon DynamoDB
-- **Hosting:** AWS Fargate, orchestrated by Amazon ECS
-- **AI Services**: AWS Bedrock
+### 技術スタック
+- **ランタイム**: Bun
+- **言語**: TypeScript
+- **WebSocket**: ネイティブBun WebSocketサーバー
+- **データベース**: Amazon DynamoDB
+- **ホスティング**: Amazon ECSによって調整されるAWS Fargate
+- **AIサービス**: AWS Bedrock
 
-### Inbound Connections
-- WebSocket connections from Game Clients, via **CloudFront**
+### インバウンド接続
+- **CloudFront**経由でのゲームクライアントからのWebSocket接続
 
-### Outbound Connections
-1. The game server persists data in **DynamoDB**. The game server uses an ECS task IAM role to grant it permissions to communicate with the following tables:
-   - `Users` Table: User account metadata
-   - `Usernames` Table: Maps usernames to user ID's
-   - `Items` Table: Game item metadata
-   - `Inventory` Table: Inventory ID to item mapping
-   - `Location` Table: Item ID to inventory ID mapping
-   - `Persona` Table: Metadata about player characters
+### アウトバウンド接続
+1. ゲームサーバーは**DynamoDB**にデータを永続化します。ゲームサーバーは以下のテーブルとの通信権限を付与するためにECSタスクIAMロールを使用します：
+   - `Users`テーブル: ユーザーアカウントメタデータ
+   - `Usernames`テーブル: ユーザー名をユーザーIDにマッピング
+   - `Items`テーブル: ゲームアイテムメタデータ
+   - `Inventory`テーブル: インベントリIDからアイテムへのマッピング
+   - `Location`テーブル: アイテムIDからインベントリIDへのマッピング
+   - `Persona`テーブル: プレイヤーキャラクターに関するメタデータ
 
-2. The game server authenticates users via **Amazon Cognito**
-   - The game server uses an ECS task IAM role to grant it permissions to verify tokens and manage users
-   - Implements JWT token validation for WebSocket connections
-   - Manages user sessions and authentication state
+2. ゲームサーバーは**Amazon Cognito**を介してユーザーを認証します
+   - ゲームサーバーはトークンの検証とユーザー管理の権限を付与するためにECSタスクIAMロールを使用
+   - WebSocket接続のJWTトークン検証を実装
+   - ユーザーセッションと認証状態を管理
 
-3. The game server requests image URL's from **Item Images Service**
-   - HTTPS requests to Application Load Balancer fronting the server
-   - Simple REST server that returns a JSON response
+3. ゲームサーバーは**アイテム画像サービス**から画像URLをリクエストします
+   - サーバーの前面にあるApplication Load BalancerへのHTTPSリクエスト
+   - JSON応答を返すシンプルなRESTサーバー
 
-4. The game server uses **AWS Bedrock**
-   - The game server uses an ECS task IAM role to grant it permissions to make Bedrock API calls.
-   - LLM is used to generate new items, model dynamic interactions between items, and appraise items for sale.
-   - Server implements and retry and fallback through the following models, in order: Anthropic Sonnet 4, Anthropic Sonnet 3.7, and Amazon Nova Pro
+4. ゲームサーバーは**AWS Bedrock**を使用します
+   - ゲームサーバーはBedrock API呼び出しを行う権限を付与するためにECSタスクIAMロールを使用
+   - LLMは新しいアイテムの生成、アイテム間の動的相互作用のモデル化、販売用アイテムの鑑定に使用
+   - サーバーは以下のモデルを順番に再試行とフォールバックを実装：Anthropic Sonnet 4、Anthropic Sonnet 3.7、Amazon Nova Pro
 
-## Item Images Service
+## アイテム画像サービス
 
-The Item Images Service is a specialized microservice that handles the generation, storage, and retrieval of game item images. It uses vector search capabilities with MemoryDB to index and lookup similar images as a cost savings measure. It uses Amazon Nova Canvas to generate images, stores the images in S3, and serves them via CloudFront.
+アイテム画像サービスは、ゲームアイテム画像の生成、保存、取得を処理する専用マイクロサービスです。コスト削減策として、MemoryDBでベクトル検索機能を使用して類似画像のインデックス作成と検索を行います。Amazon Nova Canvasを使用して画像を生成し、S3に画像を保存し、CloudFront経由で提供します。
 
 ```mermaid
 graph TB
-    subgraph ItemImages[Item Images Service]
+    subgraph ItemImages[アイテム画像サービス]
         ALB[Application Load Balancer]
-        HTTP[HTTP Server]
-        Vector[Vector Search]
-        ImageGen[Image Generation]
-        ALB -->|Security Group|HTTP
+        HTTP[HTTPサーバー]
+        Vector[ベクトル検索]
+        ImageGen[画像生成]
+        ALB -->|セキュリティグループ|HTTP
         HTTP --> Vector
         HTTP --> ImageGen
     end
 
-    subgraph In
-        Server[Game Server]
+    subgraph 入力
+        Server[ゲームサーバー]
     end
 
-    subgraph Out
+    subgraph 出力
         MemoryDB[MemoryDB]
         S3[S3]
         CloudFront[CloudFront]
@@ -156,43 +156,41 @@ graph TB
         ImageModel[Nova Canvas]
     end
 
-    Server -->|Security Group|ALB
-    Vector -->|Security Group|MemoryDB
+    Server -->|セキュリティグループ|ALB
+    Vector -->|セキュリティグループ|MemoryDB
     Vector -->|IAM|Embeddings
     ImageGen -->|IAM|ImageModel
     ImageGen -->|IAM|S3
     S3 -->|Origin Access Control|CloudFront
 ```
 
-### Technology Stack
-- **Runtime**: Bun
-- **Language**: TypeScript
-- **Hosting:** AWS Fargate, orchestrated by Amazon ECS
-- **Database**: AWS MemoryDB (Redis-compatible)
-- **Storage**: Amazon S3
+### 技術スタック
+- **ランタイム**: Bun
+- **言語**: TypeScript
+- **ホスティング**: Amazon ECSによって調整されるAWS Fargate
+- **データベース**: AWS MemoryDB（Redis互換）
+- **ストレージ**: Amazon S3
 - **CDN**: CloudFront
-- **AI Services**: 
+- **AIサービス**: 
   - Amazon Titan Text Embeddings v2
   - Amazon Nova Canvas
 
-### Inbound Connections
+### インバウンド接続
 
-- HTTPS requests from Game Server for image generation. Requests ingress via an HTTPS Application Load Balancer, and are distributed across Bun containers hosted in AWS Fargate.
+- 画像生成のためのゲームサーバーからのHTTPSリクエスト。リクエストはHTTPS Application Load Balancer経由で入り、AWS FargateでホストされるBunコンテナ間で分散されます。
 
-### Outbound Connections
+### アウトバウンド接続
 1. **MemoryDB**
-   - Vector database to search for similar generated images
-   - MemoryDB has a security group that only allows inbound connections
-     from the security group of this service.
+   - 類似の生成画像を検索するベクトルデータベース
+   - MemoryDBには、このサービスのセキュリティグループからのインバウンド接続のみを許可するセキュリティグループがあります
 
 2. **S3**
-   - Storage for generated images
-   - Item images service has an IAM role that grants it permission to
-     add items to the S3 bucket
-   - No public ACL, CloudFront accesses the bucket via ab Origin Access Control policy.
+   - 生成画像のストレージ
+   - アイテム画像サービスには、S3バケットにアイテムを追加する権限を付与するIAMロールがあります
+   - パブリックACLなし、CloudFrontはOrigin Access Controlポリシー経由でバケットにアクセス
 
-4. **AI Services**
-   - Titan Text Embeddings for embeddings that can be stored in vector database
-   - Nova Canvas for image generation
-   - Item images service has an IAM role that grants it permission to talk to Bedrock
+4. **AIサービス**
+   - ベクトルデータベースに保存できる埋め込みのためのTitan Text Embeddings
+   - 画像生成のためのNova Canvas
+   - アイテム画像サービスには、Bedrockと通信する権限を付与するIAMロールがあります
 

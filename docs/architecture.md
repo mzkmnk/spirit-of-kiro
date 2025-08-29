@@ -1,41 +1,40 @@
-# Spirit of Kiro Game Documentation
+# Spirit of Kiro ゲームドキュメント
 
-This game uses a client server architecture. There are three main components:
+このゲームはクライアントサーバーアーキテクチャを使用しています。主要な3つのコンポーネントがあります：
 
 ```mermaid
 graph LR
     Client[Game Client] --> Server[Game Server] --> Images[Item Images Service]
 ```
 
-## Game Client:
-  * Vue.js based game engine which represents game objects as
-    Vue components.
-  * Flexible tile grid system that adapts to varying screen sizes
-  * Interactive game objects (dispenser, workbench, garbage, storage chest, computer)
-  * Physics-based movement and collision system
+## ゲームクライアント:
+  * ゲームオブジェクトをVueコンポーネントとして表現する
+    Vue.jsベースのゲームエンジン
+  * 様々な画面サイズに適応する柔軟なタイルグリッドシステム
+  * インタラクティブなゲームオブジェクト（ディスペンサー、作業台、ゴミ箱、収納チェスト、コンピューター）
+  * 物理ベースの移動と衝突システム
   
-## Game Server:
-  * WebSocket protocol for low latency bi-directional communication between client and server
-  * DynamoDB storage of inventories and item metadata.
-  * AWS Bedrock integration powering the following features:
-     * Random item generation. Infinite variations of items. Unique item names,
-       descriptions, damage, and skills, written by generative AI.
-     * Crafting. Transform, improve, combine, and consume items in a
-       realistic manner.
-     * Appraisal. Sell your crafted items to see what the AI thinks
-       they are worth.
-  * Amazon Cognito integration for user authentication and authorization
+## ゲームサーバー:
+  * クライアントとサーバー間の低遅延双方向通信のためのWebSocketプロトコル
+  * インベントリとアイテムメタデータのDynamoDBストレージ
+  * 以下の機能を提供するAWS Bedrock統合:
+     * ランダムアイテム生成。無限のアイテムバリエーション。生成AIによって
+       書かれたユニークなアイテム名、説明、ダメージ、スキル
+     * クラフティング。アイテムを現実的な方法で変換、改良、組み合わせ、消費
+     * 鑑定。クラフトしたアイテムを売却してAIがどの程度の価値があると
+       考えるかを確認
+  * ユーザー認証と認可のためのAmazon Cognito統合
   
-## Item Images Server:
-  * AWS Bedrock integration powering the following features:
-    * Amazon Nova Canvas to generate unique images for generated items
-    * Amazon Titan Text Embeddings v2 to generate vector embeddings of item descriptions
-  * Amazon MemoryDB vector database to do vector matching of previously generated item images to new item image requests
-  * S3 to store item images, CloudFront distribution as ingress.
+## アイテム画像サーバー:
+  * 以下の機能を提供するAWS Bedrock統合:
+    * 生成されたアイテムのユニークな画像を生成するAmazon Nova Canvas
+    * アイテム説明のベクトル埋め込みを生成するAmazon Titan Text Embeddings v2
+  * 新しいアイテム画像リクエストに対して以前に生成されたアイテム画像のベクトルマッチングを行うAmazon MemoryDBベクトルデータベース
+  * アイテム画像を保存するS3、イングレスとしてのCloudFrontディストリビューション
 
-## Architecture Map
+## アーキテクチャマップ
 
-The following map shows the relationships and data flow through the end to end architecture:
+以下のマップは、エンドツーエンドアーキテクチャを通じた関係とデータフローを示しています：
 
 ```mermaid
 graph TB
@@ -104,70 +103,69 @@ graph TB
     end
 ```
 
-## Frontend Game Client Systems
+## フロントエンドゲームクライアントシステム
 
-The client is built with Vue.js 3 and uses the Composition API throughout. The architecture follows these key patterns:
+クライアントはVue.js 3で構築され、全体を通してComposition APIを使用しています。アーキテクチャは以下の主要パターンに従います：
 
-- **Component-based UI**: Vue components for all game UI elements
-- **System-based Architecture**: Game logic is separated into independent systems that engage with each other through events.
-- **Reactive State Management**: Using Pinia and Vue's reactivity system
-- **Server-driven Events**: WebSocket events from the server feed into the frontend event system to drive game state changes
+- **コンポーネントベースUI**: すべてのゲームUI要素にVueコンポーネントを使用
+- **システムベースアーキテクチャ**: ゲームロジックは、イベントを通じて相互に連携する独立したシステムに分離
+- **リアクティブ状態管理**: PiniaとVueのリアクティビティシステムを使用
+- **サーバー駆動イベント**: サーバーからのWebSocketイベントがフロントエンドイベントシステムに供給され、ゲーム状態の変更を駆動
 
-### Socket System
-- Manages connection to the WebSocket server, including reconnection on disconnect
-- Provides methods to dispatch WebSocket messages to the server.
-- On incoming message from the server, fans that message out to other systems
-  that are subscribing to that message.
+### ソケットシステム
+- 切断時の再接続を含む、WebSocketサーバーへの接続を管理
+- サーバーにWebSocketメッセージを送信するメソッドを提供
+- サーバーからの受信メッセージを、そのメッセージを購読している他のシステムに配信
 
-### Game Object System
-- Tracks all game objects that are drawn on screen
-- Handles object creation, updates, and removal
+### ゲームオブジェクトシステム
+- 画面に描画されるすべてのゲームオブジェクトを追跡
+- オブジェクトの作成、更新、削除を処理
 
-### Physics System
-- Handles all physics calculations and collision detection for game objects, including object movement, collisions, and gravity
-- Supports different types of physics interactions (static, dynamic, field)
-- Implements bounce, friction, and mass-based interactions
+### 物理システム
+- オブジェクトの移動、衝突、重力を含む、ゲームオブジェクトのすべての物理計算と衝突検出を処理
+- 異なるタイプの物理相互作用（静的、動的、フィールド）をサポート
+- バウンス、摩擦、質量ベースの相互作用を実装
 
-### Item System
-- Keeps track of all game items and their properties
-- Synchronizes with server state via event subscriptions
+### アイテムシステム
+- すべてのゲームアイテムとそのプロパティを追跡
+- イベント購読を通じてサーバー状態と同期
 
-### Inventory System
-- Keeps track of which inventory an item is in
-- Handles item pickup, drop, and transfer
-- Synchronizes with server state via event subscriptions
+### インベントリシステム
+- アイテムがどのインベントリにあるかを追跡
+- アイテムの拾得、ドロップ、転送を処理
+- イベント購読を通じてサーバー状態と同期
 
-### Persona System
-- Manages player personas and character data
-- Handles persona customization and state
-- Synchronizes with server state via event subscriptions
+### ペルソナシステム
+- プレイヤーペルソナとキャラクターデータを管理
+- ペルソナのカスタマイズと状態を処理
+- イベント購読を通じてサーバー状態と同期
 
-### Preloader System
-- Manages asset loading and initialization
-- Tracks loading progress
-- Uses event subscription to watch for new images to load
+### プリローダーシステム
+- アセットの読み込みと初期化を管理
+- 読み込み進行状況を追跡
+- イベント購読を使用して新しい画像の読み込みを監視
 
-## Server Architecture
+## サーバーアーキテクチャ
 
-The server is a Bun-based WebSocket server that handles:
+サーバーは以下を処理するBunベースのWebSocketサーバーです：
 
-- Real-time game state synchronization
-- Message-based communication
-- AI integration for item generation
-- State persistence using AWS services
+- リアルタイムゲーム状態同期
+- メッセージベース通信
+- アイテム生成のためのAI統合
+- AWSサービスを使用した状態永続化
 
-## Infrastructure
+## インフラストラクチャ
 
-The game uses AWS services for:
+ゲームは以下のためにAWSサービスを使用します：
 
-- CloudFront distribution
-- S3 storage for AI-generated images
-- DynamoDB for state persistence
-- Bedrock for AI integration
+- CloudFrontディストリビューション
+- AI生成画像のためのS3ストレージ
+- 状態永続化のためのDynamoDB
+- AI統合のためのBedrock
 
-## Development
+## 開発
 
-The project uses Docker for local development with separate containers for:
-- Client (Vue.js application)
-- Server (Bun WebSocket server)
-- Infrastructure deployment
+プロジェクトは以下の個別コンテナでローカル開発にDockerを使用します：
+- クライアント（Vue.jsアプリケーション）
+- サーバー（Bun WebSocketサーバー）
+- インフラストラクチャデプロイメント

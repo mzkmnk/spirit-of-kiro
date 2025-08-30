@@ -1,67 +1,61 @@
-## Spirit of Kiro
+## ⚔️ Spirit of Kiro - 海賊の宝物工房 ⚔️
 
 ![1.png](docs/images/1.png)
 
-This is an infinite crafting workshop game developed as a demo project for Kiro. >95% of the code has been written by prompting Kiro. This demo project is
-designed to show best practices for Kiro, and AI engineering
-in general.
+おーい、陸の者どもよ！これは偉大なるKiro海賊団がデジタルの炎で鍛え上げた無限クラフト工房ゲームじゃ。このコードの95%以上は、Kiro自身に命令を下すことで生み出されたものじゃ - AI海賊術の力の証明よ！このデモプロジェクトは、七つのデジタル海におけるKiroとAIエンジニアリングの最高の実践を示しておる。
 
-## Find Unique Items
+## 🏴‍☠️ 伝説の宝物を探せ
 
-Every generated item is unique. Experience an infinite range of potential: from mundane pieces of garbage, to celestial remnants of epic value.
+すべての戦利品は海賊のヒゲのように唯一無二じゃ！お前たちは無限の宝の山を発見するじゃろう：価値のないフジツボのカスから、黒ひげ自身も羨望で泣くような天の遺物まで。
 
 ![2.png](docs/images/2.png)
 
-Each item has its own unique description, damage, and quirks.
+それぞれの宝物には独自の栄光の物語、ダメージの可能性、そしてデイビー・ジョーンズでさえ興味を示すような神秘的な特性が宿っておる！
 
-## Craft and Improve
+## ⚒️ 己の運命を鍛え上げろ
 
 ![3.png](docs/images/3.png)
 
-The items you obtain aren't static. Add an item to the workbench to use it's quirks on other items. Cut, smash, and break items down into components. Glue, weld, or install items together into complex configurations. Paint, cook, or enchant items to modify their appearances and effects.
+お前が略奪した宝物は石に刻まれたものではないぞ、相棒よ！作業台に運んで、その神秘的な特性を他の戦利品に使うのじゃ。切り刻み、叩き潰し、アイテムをその本質まで粉砕せよ！縛り、溶接し、または即席で組み合わせて恐ろしい装置を作り上げろ。海の飛沫で塗装し、大砲の火で調理し、または古代の呪いで魅惑してその魂を変えるのじゃ！
 
-If there is a verb for it, you can probably do it in this game!
+大海原でできることなら、この海賊ゲームでもきっとできるじゃろう、賢い海の犬よ！
 
-## Sell
+## 💰 戦利品を売り払え
 
-Done with an item, or just need to make some space in your inventory?
+特定の戦利品に飽きたか、それとも宝箱により大きな獲物のための場所を作る必要があるか？
 
 ![4.png](docs/images/4.png)
 
-The appraiser will analyze your item, and sell it for you, giving you a cut of what it was worth!
+船の鑑定士が鋭い目でお前の品物を調べ、代わりに売り払ってくれるぞ。その真の価値の公正な分け前をお前に与えてくれる！散らかった船倉のせいで板歩きをする必要はないのじゃ！
 
-## Developer Resources
+## 🗺️ 航海士の海図（開発者リソース）
 
-### Start Here
+### ここで航路を定めよ
 
-* [local-setup.md](./docs/local-setup.md) - Instructions for how to deploy a local version of the game for fun, or for development
+* [local-setup.md](./docs/local-setup.md) - 略奪や開発のために、このゲームの独自のローカル版を組み立てる手順
 
-### Learn More
+### 海の知識を深めよ
 
-* [CHALLENGE.md](./docs/CHALLENGE.md) - This game has a sample branch that is deliberately left unfinished, with a few bugs. Read to learn more about these tasks. You can use Kiro to work on these tasks.
-* [ROADMAP.md](./docs/ROADMAP.md) - There is always more ideas to build. Although this game has a basic core loop, there is a lot more depth that can be added. Kiro is a great tool to implement these remaining features.
-* [architecture.md](./docs/architecture.md) - Learn more about how the game works, and how it's pieces tie together.
-* [appsec-overview.md](./docs/appsec-overview.md) - Similar to the architecture overview, but more focused on the inbound and outbound connection security.
-* [server-messages.md](./docs/server-messages.md) - Documentation of all WebSocket message types and their formats used for client-server communication.
-* [client-events.md](./docs/client-events.md) - Documentation of all client-side events and their payloads used for internal game communication.
-* [remote-deploy.md](./docs/remote-deploy.md) - Instructions for how to deploy the game as a publically hosted service on AWS infrastructure.
-* [guiding-principles.md](./docs/guiding-principles.md) - Some of the guiding principles of the project.
+* [CHALLENGE.md](./docs/CHALLENGE.md) - このゲームには意図的に未完成のままにされたサンプルブランチがあり、いくつかの海の怪物（バグ）が潜んでおる。これらの試練について学ぶために読むのじゃ。Kiroを使ってこれらの挑戦と戦うことができるぞ！
+* [ROADMAP.md](./docs/ROADMAP.md) - 発見すべき宝物は常にもっとあるのじゃ！このゲームには堅固な基盤があるが、まだ探索すべき広大な深海がある。Kiroはこれらの残りの冒険を実装するための優れた道具じゃ。
+* [architecture.md](./docs/architecture.md) - この船がどのように建造され、すべての部品が調和して働くかを学べ。
+* [appsec-overview.md](./docs/appsec-overview.md) - 船の設計図に似ているが、乗船攻撃から守り、接続を安全にすることに焦点を当てておる。
+* [server-messages.md](./docs/server-messages.md) - 船と陸の通信に使用されるすべてのWebSocketメッセージタイプとその形式の完全な暗号書。
+* [client-events.md](./docs/client-events.md) - 船内通信に使用されるすべての乗組員側イベントとその積荷の文書。
+* [remote-deploy.md](./docs/remote-deploy.md) - このゲームをAWSクラウドの海で公開艦隊として起動する手順。
+* [guiding-principles.md](./docs/guiding-principles.md) - このプロジェクトを導く海賊の掟。
 
-### Contributions
+### 乗組員になれ
 
-The core game loop of this demo project is complete, however, there is
-also a roadmap of potential ideas that could be built into this game.
-Check the [ROADMAP.md](./docs/ROADMAP.md) for ideas on what you might be
-able to build into the game. 
+このデモプロジェクトの中核となる航海は完了しているが、このゲームに追加できる潜在的な冒険の宝の地図がある。ゲームに何を構築できるかのアイデアについては[ROADMAP.md](./docs/ROADMAP.md)を確認せよ。
 
-Open source contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md)
-for instructions on how to contribute.
+すべての者、乗船歓迎じゃ！我らの陽気な貢献者の一団に加わる方法については[CONTRIBUTING.md](CONTRIBUTING.md)を見よ。
 
-## Security
+## ⚓ 船舶保安
 
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+セキュリティ侵害の報告と、我らの船を壊血病の犬どもから安全に保つ方法についての詳細は[CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications)を見よ。
 
-## License
+## 📜 協定書
 
-This library is licensed under the MIT-0 License. See the LICENSE file.
+この宝物はMIT-0ライセンスの下で許可されておる。完全な条項についてはLICENSEの巻物を見よ、賢い船乗りよ。
 
